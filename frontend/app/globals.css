@@ -1,0 +1,16 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --charcoal: #111111;
+  --gold: #FFCC00;
+  --surface: #1a1a1a;
+  --border: #2a2a2a;
+}
+
+body {
+  background-color: var(--charcoal);
+  color: #ffffff;
+  font-family: Inter, sans-serif;
+}
