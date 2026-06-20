@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 const nav = [
   { href: "/dashboard", label: "Dashboard", icon: "◈" },
@@ -11,6 +11,12 @@ const nav = [
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter();
+
+  async function handleLogout() {
+    await fetch("/api/auth/logout", { method: "POST" });
+    router.push("/login");
+  }
 
   return (
     <aside className="w-52 min-h-screen bg-[#0d0d0d] border-r border-[#1e1e1e] flex flex-col shrink-0">
@@ -39,7 +45,16 @@ export default function Sidebar() {
         })}
       </nav>
 
-      <div className="px-5 py-4 border-t border-[#1e1e1e] text-xs text-gray-700">v1.0.0</div>
+      <div className="px-3 py-4 border-t border-[#1e1e1e] flex flex-col gap-2">
+        <button
+          onClick={handleLogout}
+          className="w-full flex items-center gap-3 px-3 py-2.5 rounded text-sm text-gray-500 hover:text-red-400 hover:bg-[#1a1a1a] transition-colors"
+        >
+          <span className="text-base leading-none">⎋</span>
+          Logout
+        </button>
+        <div className="text-xs text-gray-700 px-3">v1.0.0</div>
+      </div>
     </aside>
   );
 }
