@@ -1,5 +1,7 @@
 import os
-from fastapi import FastAPI
+import secrets
+from typing import Optional
+from fastapi import FastAPI, Depends, Header, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.database import engine, Base
@@ -21,13 +23,22 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(owners.router)
-app.include_router(pets.router)
-app.include_router(cages.router)
-app.include_router(bookings.router)
-app.include_router(medical.router)
-app.include_router(search.router)
-app.include_router(stats.router)
+# Staff routes need the key the Next.js middleware adds after login; empty API_KEY locks everything
+def require_api_key(x_api_key: Optional[str] = Header(None)):
+    if not settings.API_KEY or not x_api_key or not secrets.compare_digest(x_api_key, settings.API_KEY):
+        raise HTTPException(status_code=401, detail="Not authorised")
+
+staff = [Depends(require_api_key)]
+app.include_router(owners.router, dependencies=staff)
+app.include_router(pets.router, dependencies=staff)
+app.include_router(cages.router, dependencies=staff)
+app.include_router(bookings.router, dependencies=staff)
+app.include_router(medical.router, dependencies=staff)
+app.include_router(search.router, dependencies=staff)
+app.include_router(stats.router, dependencies=staff)
+
+app.include_router(cages.public_router)
+app.include_router(bookings.public_router)
 
 @app.get("/")
 def root():

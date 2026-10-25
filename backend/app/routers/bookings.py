@@ -6,9 +6,11 @@ from app.database import get_db
 from app.models.booking import Booking
 from app.models.pet import Pet
 from app.models.cage import Cage
-from app.schemas.booking import BookingCreate, BookingUpdate, BookingOut
+from app.models.owner import Owner
+from app.schemas.booking import BookingCreate, BookingUpdate, BookingOut, PublicBookingCreate
 
 router = APIRouter(prefix="/bookings", tags=["bookings"])
+public_router = APIRouter(prefix="/public", tags=["public"])
 
 def _overlap_exists(db: Session, cage_id: int, check_in: date, check_out: date, exclude_id: Optional[int] = None) -> bool:
     query = db.query(Booking).filter(
@@ -77,3 +79,24 @@ def cancel_booking(booking_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Booking not found")
     booking.status = "Cancelled"
     db.commit()
+
+# Website booking form: never returns customer details, reuses the owner by phone
+@public_router.post("/book", status_code=201)
+def public_book(data: PublicBookingCreate, db: Session = Depends(get_db)):
+    cage = db.query(Cage).filter(Cage.id == data.cage_id, Cage.is_active == True).first()
+    if not cage:
+        raise HTTPException(status_code=404, detail="Room not found or unavailable")
+    if _overlap_exists(db, data.cage_id, data.check_in, data.check_out):
+        raise HTTPException(status_code=409, detail="This room was just taken for those dates. Please pick another.")
+    owner = db.query(Owner).filter(Owner.phone == data.owner.phone).first()
+    if not owner:
+        owner = Owner(**data.owner.model_dump())
+        db.add(owner)
+        db.flush()
+    pet = Pet(**data.pet.model_dump(exclude={"owner_id"}), owner_id=owner.id)
+    db.add(pet)
+    db.flush()
+    booking = Booking(pet_id=pet.id, cage_id=data.cage_id, check_in=data.check_in, check_out=data.check_out)
+    db.add(booking)
+    db.commit()
+    return {"id": booking.id}

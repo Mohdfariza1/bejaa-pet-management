@@ -7,6 +7,7 @@ from app.models.booking import Booking
 from app.schemas.cage import CageCreate, CageUpdate, CageOut
 
 router = APIRouter(prefix="/cages", tags=["cages"])
+public_router = APIRouter(prefix="/public/cages", tags=["public"])
 
 @router.get("", response_model=list[CageOut])
 def list_cages(active_only: bool = Query(True), db: Session = Depends(get_db)):
@@ -17,6 +18,7 @@ def list_cages(active_only: bool = Query(True), db: Session = Depends(get_db)):
 
 # /available must be defined BEFORE /{cage_id} to avoid FastAPI matching "available" as an int
 @router.get("/available", response_model=list[CageOut])
+@public_router.get("/available", response_model=list[CageOut])
 def available_cages(check_in: date, check_out: date, db: Session = Depends(get_db)):
     if check_out <= check_in:
         raise HTTPException(status_code=400, detail="Check-out must be after check-in")
@@ -24,7 +26,7 @@ def available_cages(check_in: date, check_out: date, db: Session = Depends(get_d
         Booking.status.not_in(["Cancelled", "Checked Out"]),
         Booking.check_in < check_out,
         Booking.check_out > check_in,
-    ).subquery()
+    ).scalar_subquery()
     return db.query(Cage).filter(
         Cage.is_active == True,
         Cage.id.not_in(booked_ids)

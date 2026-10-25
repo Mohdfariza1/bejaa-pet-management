@@ -21,8 +21,6 @@ type FormData = {
 }
 
 type Cage = { id: number; label: string; type: string; size: string }
-type Owner = { id: number; phone: string }
-type Pet = { id: number }
 type Booking = { id: number }
 
 const SPECIES = ["Cat", "Dog", "Bird", "Rabbit", "Hamster", "Fish", "Other"]
@@ -70,7 +68,7 @@ export default function BookPage() {
     setLoading(true)
     setError(null)
     try {
-      const data = await apiFetch<Cage[]>("GET", `/cages/available?check_in=${form.checkIn}&check_out=${form.checkOut}`)
+      const data = await apiFetch<Cage[]>("GET", `/public/cages/available?check_in=${form.checkIn}&check_out=${form.checkOut}`)
       setCages(data)
       setCagesFetched(true)
       set("cageId", null)
@@ -85,39 +83,21 @@ export default function BookPage() {
     setLoading(true)
     setError(null)
     try {
-      let ownerId: number
-      try {
-        const owner = await apiFetch<Owner>("POST", "/owners", {
+      const booking = await apiFetch<Booking>("POST", "/public/book", {
+        owner: {
           name: form.ownerName,
           phone: form.ownerPhone,
           email: form.ownerEmail || null,
           address: form.ownerAddress || null,
-        })
-        ownerId = owner.id
-      } catch (e: unknown) {
-        const msg = e instanceof Error ? e.message : ""
-        if (msg.toLowerCase().includes("already registered") || msg.includes("409")) {
-          const owners = await apiFetch<Owner[]>("GET", `/owners?q=${encodeURIComponent(form.ownerPhone)}`)
-          const match = owners.find(o => o.phone === form.ownerPhone)
-          if (!match) throw new Error("Phone already registered but lookup failed. Please contact us directly.")
-          ownerId = match.id
-        } else {
-          throw e
-        }
-      }
-
-      const pet = await apiFetch<Pet>("POST", "/pets", {
-        owner_id: ownerId,
-        name: form.petName,
-        species: form.petSpecies,
-        breed: form.petBreed || null,
-        gender: form.petGender,
-        date_of_birth: form.petDob || null,
-        weight_kg: form.petWeight ? parseFloat(form.petWeight) : null,
-      })
-
-      const booking = await apiFetch<Booking>("POST", "/bookings", {
-        pet_id: pet.id,
+        },
+        pet: {
+          name: form.petName,
+          species: form.petSpecies,
+          breed: form.petBreed || null,
+          gender: form.petGender,
+          date_of_birth: form.petDob || null,
+          weight_kg: form.petWeight ? parseFloat(form.petWeight) : null,
+        },
         cage_id: form.cageId,
         check_in: form.checkIn,
         check_out: form.checkOut,

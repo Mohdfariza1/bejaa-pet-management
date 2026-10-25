@@ -1,6 +1,8 @@
 from pydantic import BaseModel, field_validator, model_validator
 from datetime import date, datetime
 from typing import Optional
+from app.schemas.owner import OwnerCreate
+from app.schemas.pet import PetCreate
 
 VALID_STATUSES = {"Pending", "Confirmed", "Checked In", "Checked Out", "Cancelled"}
 
@@ -10,6 +12,22 @@ class BookingCreate(BaseModel):
     check_in: date
     check_out: date
     notes: Optional[str] = None
+
+    @model_validator(mode="after")
+    def dates_valid(self):
+        if self.check_out <= self.check_in:
+            raise ValueError("Check-out date must be after check-in date")
+        return self
+
+class PublicPetCreate(PetCreate):
+    owner_id: Optional[int] = None
+
+class PublicBookingCreate(BaseModel):
+    owner: OwnerCreate
+    pet: PublicPetCreate
+    cage_id: int
+    check_in: date
+    check_out: date
 
     @model_validator(mode="after")
     def dates_valid(self):
