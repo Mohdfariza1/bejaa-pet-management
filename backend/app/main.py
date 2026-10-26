@@ -1,14 +1,34 @@
 import os
-import secrets
-from typing import Optional
-from fastapi import FastAPI, Depends, Header, HTTPException
+from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy import inspect, text
 from app.core.config import settings
-from app.database import engine, Base
+from app.core.auth import require_staff, hash_password
+from app.database import engine, Base, SessionLocal
 import app.models  # noqa: F401 — registers all models with Base.metadata
-from app.routers import owners, pets, cages, bookings, medical, search, stats
+from app.models.staff import Staff
+from app.routers import owners, pets, cages, bookings, medical, search, stats, staff
 
 Base.metadata.create_all(bind=engine)
+
+# create_all never adds columns to tables that already exist, so new ones are added here
+_new_columns = {
+    "owners": {"archived_at": "TIMESTAMP"},
+    "pets": {"alert": "VARCHAR(200)", "archived_at": "TIMESTAMP"},
+}
+with engine.begin() as conn:
+    for table, columns in _new_columns.items():
+        have = {c["name"] for c in inspect(conn).get_columns(table)}
+        for name, sql_type in columns.items():
+            if name not in have:
+                conn.execute(text(f"ALTER TABLE {table} ADD COLUMN {name} {sql_type}"))
+
+# First boss account comes from ADMIN_USERNAME / ADMIN_PASSWORD, only while the staff table is empty
+with SessionLocal() as db:
+    if settings.ADMIN_USERNAME and settings.ADMIN_PASSWORD and not db.query(Staff).first():
+        db.add(Staff(name="Boss", username=settings.ADMIN_USERNAME.strip().lower(), role="Boss",
+                     password_hash=hash_password(settings.ADMIN_PASSWORD)))
+        db.commit()
 
 app = FastAPI(title=settings.APP_NAME, debug=settings.DEBUG)
 
@@ -23,19 +43,17 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Staff routes need the key the Next.js middleware adds after login; empty API_KEY locks everything
-def require_api_key(x_api_key: Optional[str] = Header(None)):
-    if not settings.API_KEY or not x_api_key or not secrets.compare_digest(x_api_key, settings.API_KEY):
-        raise HTTPException(status_code=401, detail="Not authorised")
-
-staff = [Depends(require_api_key)]
-app.include_router(owners.router, dependencies=staff)
-app.include_router(pets.router, dependencies=staff)
-app.include_router(cages.router, dependencies=staff)
-app.include_router(bookings.router, dependencies=staff)
-app.include_router(medical.router, dependencies=staff)
-app.include_router(search.router, dependencies=staff)
-app.include_router(stats.router, dependencies=staff)
+# Data routes need the server key plus a logged-in, active staff member (both added by Next.js middleware)
+logged_in = [Depends(require_staff)]
+app.include_router(owners.router, dependencies=logged_in)
+app.include_router(pets.router, dependencies=logged_in)
+app.include_router(cages.router, dependencies=logged_in)
+app.include_router(bookings.router, dependencies=logged_in)
+app.include_router(medical.router, dependencies=logged_in)
+app.include_router(search.router, dependencies=logged_in)
+app.include_router(stats.router, dependencies=logged_in)
+app.include_router(staff.router)
+app.include_router(staff.auth_router)
 
 app.include_router(cages.public_router)
 app.include_router(bookings.public_router)

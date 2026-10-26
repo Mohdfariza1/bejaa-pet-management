@@ -8,6 +8,7 @@ from app.models.pet import Pet
 from app.models.cage import Cage
 from app.models.owner import Owner
 from app.schemas.booking import BookingCreate, BookingUpdate, BookingOut, PublicBookingCreate
+from app.routers.owners import find_by_phone
 
 router = APIRouter(prefix="/bookings", tags=["bookings"])
 public_router = APIRouter(prefix="/public", tags=["public"])
@@ -41,7 +42,7 @@ def list_bookings(
 
 @router.post("", response_model=BookingOut, status_code=201)
 def create_booking(data: BookingCreate, db: Session = Depends(get_db)):
-    if not db.query(Pet).filter(Pet.id == data.pet_id).first():
+    if not db.query(Pet).filter(Pet.id == data.pet_id, Pet.archived_at.is_(None)).first():
         raise HTTPException(status_code=404, detail="Pet not found")
     cage = db.query(Cage).filter(Cage.id == data.cage_id, Cage.is_active == True).first()
     if not cage:
@@ -88,8 +89,10 @@ def public_book(data: PublicBookingCreate, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Room not found or unavailable")
     if _overlap_exists(db, data.cage_id, data.check_in, data.check_out):
         raise HTTPException(status_code=409, detail="This room was just taken for those dates. Please pick another.")
-    owner = db.query(Owner).filter(Owner.phone == data.owner.phone).first()
-    if not owner:
+    owner = find_by_phone(db, data.owner.phone)
+    if owner:
+        owner.archived_at = None
+    else:
         owner = Owner(**data.owner.model_dump())
         db.add(owner)
         db.flush()

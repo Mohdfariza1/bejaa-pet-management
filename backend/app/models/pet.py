@@ -15,7 +15,9 @@ class Pet(Base):
     date_of_birth = Column(Date, nullable=True)
     weight_kg = Column(Float, nullable=True)
     notes = Column(Text, nullable=True)
+    alert = Column(String(200), nullable=True)  # allergy, medicine, behaviour: shown in red everywhere
     created_at = Column(DateTime, default=datetime.utcnow)
+    archived_at = Column(DateTime, nullable=True)
 
     owner = relationship("Owner", back_populates="pets")
     bookings = relationship("Booking", back_populates="pet", cascade="all, delete-orphan")

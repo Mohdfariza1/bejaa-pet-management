@@ -5,6 +5,8 @@ class Settings(BaseSettings):
     APP_NAME: str = "Bejaa Pet Management"
     DEBUG: bool = True
     API_KEY: str = ""
+    ADMIN_USERNAME: str = ""
+    ADMIN_PASSWORD: str = ""
 
     class Config:
         env_file = ".env"

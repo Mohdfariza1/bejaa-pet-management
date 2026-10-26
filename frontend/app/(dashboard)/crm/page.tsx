@@ -55,33 +55,33 @@ export default function CRMPage() {
   };
 
   return (
-    <div className="p-6 max-w-5xl">
+    <div className="p-4 md:p-8 max-w-5xl">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-white text-xl font-semibold">
+        <h1 className="text-ink text-2xl font-bold">
           {selectedOwner ? (
             <span className="flex items-center gap-3">
-              <button onClick={handleBack} className="text-gray-500 hover:text-[#FFCC00] text-sm font-normal transition-colors">
-                ← Owners
+              <button onClick={handleBack} className="text-muted hover:text-brand text-sm font-normal transition-colors">
+                ← Customers
               </button>
-              <span className="text-[#FFCC00]">{selectedOwner.name}</span>
-              <span className="text-gray-600 text-sm font-normal">{selectedOwner.phone}</span>
+              <span>{selectedOwner.name}</span>
+              <span className="text-muted text-sm font-normal">{selectedOwner.phone}</span>
             </span>
           ) : (
-            "CRM"
+            "Customers"
           )}
         </h1>
         {selectedOwner ? (
-          <Button size="sm" onClick={() => setShowPetModal(true)}>+ Add Pet</Button>
+          <Button size="sm" onClick={() => setShowPetModal(true)}>+ Add pet</Button>
         ) : (
-          <Button onClick={() => setShowOwnerModal(true)}>+ Add Owner</Button>
+          <Button onClick={() => setShowOwnerModal(true)}>+ Add customer</Button>
         )}
       </div>
 
       {/* Search (owners view only) */}
       {!selectedOwner && (
         <Input
-          placeholder="Search owner by name or phone..."
+          placeholder="Search by name or phone number..."
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           className="w-full mb-6"
@@ -92,16 +92,16 @@ export default function CRMPage() {
       {!selectedOwner && (
         <>
           {loading && (
-            <p className="text-gray-600 text-sm">Loading...</p>
+            <p className="text-muted text-sm">Loading...</p>
           )}
           {!loading && owners.length === 0 && (
             <div className="text-center py-16">
-              <p className="text-gray-600 text-sm">No owners found.</p>
+              <p className="text-muted text-sm">No customers found.</p>
               <button
                 onClick={() => setShowOwnerModal(true)}
-                className="text-[#FFCC00] text-sm mt-2 hover:underline"
+                className="text-brand text-sm mt-2 hover:underline"
               >
-                Add the first owner →
+                Add a customer →
               </button>
             </div>
           )}
@@ -118,12 +118,12 @@ export default function CRMPage() {
         <>
           {pets.length === 0 ? (
             <div className="text-center py-16">
-              <p className="text-gray-600 text-sm">No pets registered yet.</p>
+              <p className="text-muted text-sm">No pets registered yet.</p>
               <button
                 onClick={() => setShowPetModal(true)}
-                className="text-[#FFCC00] text-sm mt-2 hover:underline"
+                className="text-brand text-sm mt-2 hover:underline"
               >
-                Add first pet →
+                Add a pet →
               </button>
             </div>
           ) : (
@@ -141,6 +141,7 @@ export default function CRMPage() {
         <OwnerModal
           onClose={() => setShowOwnerModal(false)}
           onCreated={() => { setShowOwnerModal(false); loadOwners(query); }}
+          onOpenExisting={(owner) => { setShowOwnerModal(false); handleOwnerClick(owner); }}
         />
       )}
       {showPetModal && selectedOwner && (

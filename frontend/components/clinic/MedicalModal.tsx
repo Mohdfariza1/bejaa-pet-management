@@ -60,11 +60,11 @@ export default function MedicalModal({ petId, onClose, onCreated }: Props) {
             onChange={(e) => set("visit_date", e.target.value)}
           />
           <div className="flex flex-col gap-1">
-            <label className="text-xs text-gray-400">Type *</label>
+            <label className="text-sm font-medium text-ink">Type *</label>
             <select
               value={form.type}
               onChange={(e) => set("type", e.target.value)}
-              className="bg-[#1a1a1a] border border-[#2a2a2a] text-white rounded px-3 py-2 text-sm focus:outline-none focus:border-[#FFCC00] transition-colors"
+              className="bg-card border border-line text-ink rounded-lg px-3 py-2.5 text-[15px] focus:outline-none focus:border-brand transition-colors"
             >
               {VISIT_TYPES.map((t) => (
                 <option key={t} value={t}>{t}</option>
@@ -98,7 +98,7 @@ export default function MedicalModal({ petId, onClose, onCreated }: Props) {
           onChange={(e) => set("notes", e.target.value)}
         />
 
-        {error && <p className="text-red-400 text-xs">{error}</p>}
+        {error && <p className="text-red-600 text-sm">{error}</p>}
 
         <div className="flex justify-end gap-2 pt-1">
           <Button variant="secondary" onClick={onClose} disabled={loading}>Cancel</Button>

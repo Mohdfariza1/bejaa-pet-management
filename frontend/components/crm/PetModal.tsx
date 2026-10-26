@@ -15,11 +15,11 @@ const SPECIES = ["Dog", "Cat", "Bird", "Rabbit", "Hamster", "Fish", "Other"];
 const GENDERS = ["Male", "Female", "Unknown"];
 
 const selectCls =
-  "bg-[#1a1a1a] border border-[#2a2a2a] text-white rounded px-3 py-2 text-sm focus:outline-none focus:border-[#FFCC00] transition-colors";
+  "bg-card border border-line text-ink rounded-lg px-3 py-2.5 text-[15px] focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition-colors";
 
 export default function PetModal({ ownerId, onClose, onCreated }: Props) {
   const [form, setForm] = useState({
-    name: "", species: "Dog", breed: "", gender: "Unknown", weight_kg: "",
+    name: "", species: "Dog", breed: "", gender: "Unknown", weight_kg: "", alert: "",
   });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -38,6 +38,7 @@ export default function PetModal({ ownerId, onClose, onCreated }: Props) {
         breed: form.breed || null,
         gender: form.gender,
         weight_kg: form.weight_kg ? parseFloat(form.weight_kg) : null,
+        alert: form.alert.trim() || null,
       });
       onCreated();
     } catch (e: unknown) {
@@ -57,7 +58,7 @@ export default function PetModal({ ownerId, onClose, onCreated }: Props) {
           onChange={(e) => set("name", e.target.value)}
         />
         <div className="flex flex-col gap-1">
-          <label className="text-xs text-gray-400">Species *</label>
+          <label className="text-sm font-medium text-ink">Species *</label>
           <select className={selectCls} value={form.species} onChange={(e) => set("species", e.target.value)}>
             {SPECIES.map((s) => <option key={s}>{s}</option>)}
           </select>
@@ -70,7 +71,7 @@ export default function PetModal({ ownerId, onClose, onCreated }: Props) {
         />
         <div className="flex gap-3">
           <div className="flex flex-col gap-1 flex-1">
-            <label className="text-xs text-gray-400">Gender</label>
+            <label className="text-sm font-medium text-ink">Gender</label>
             <select className={selectCls} value={form.gender} onChange={(e) => set("gender", e.target.value)}>
               {GENDERS.map((g) => <option key={g}>{g}</option>)}
             </select>
@@ -87,7 +88,16 @@ export default function PetModal({ ownerId, onClose, onCreated }: Props) {
             />
           </div>
         </div>
-        {error && <p className="text-red-400 text-xs">{error}</p>}
+        <div className="flex flex-col gap-1">
+          <Input
+            label="Care alert"
+            placeholder="e.g. Allergic to chicken, bites when scared, takes heart pills"
+            value={form.alert}
+            onChange={(e) => set("alert", e.target.value)}
+          />
+          <p className="text-muted text-xs">Shows in red on every booking for this pet. Leave empty if none.</p>
+        </div>
+        {error && <p className="text-red-600 text-sm">{error}</p>}
         <div className="flex justify-end gap-2 pt-1">
           <Button variant="secondary" onClick={onClose} disabled={loading}>Cancel</Button>
           <Button onClick={submit} disabled={loading}>

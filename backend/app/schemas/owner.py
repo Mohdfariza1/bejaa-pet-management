@@ -37,5 +37,6 @@ class OwnerOut(BaseModel):
     email: Optional[str]
     address: Optional[str]
     created_at: datetime
+    archived_at: Optional[datetime] = None
 
     model_config = {"from_attributes": True}

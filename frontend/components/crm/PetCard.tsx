@@ -1,5 +1,4 @@
 import { Pet } from "@/lib/types";
-import Badge from "@/components/ui/Badge";
 
 interface Props {
   pet: Pet;
@@ -7,22 +6,21 @@ interface Props {
 }
 
 export default function PetCard({ pet, onClick }: Props) {
+  const details = [pet.species, pet.breed, pet.gender !== "Unknown" ? pet.gender : null, pet.weight_kg != null ? `${pet.weight_kg} kg` : null]
+    .filter(Boolean)
+    .join(" · ");
   return (
     <div
       onClick={onClick}
-      className={`bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg p-4 ${onClick ? "cursor-pointer hover:border-[#FFCC00]/40 transition-colors" : ""}`}
+      className={`bg-card border border-line rounded-xl p-4 ${onClick ? "cursor-pointer hover:border-brand transition-colors" : ""}`}
     >
-      <div className="flex items-center justify-between mb-2">
-        <span className="text-white font-medium text-sm">{pet.name}</span>
-        <Badge label={pet.species} />
-      </div>
-      <div className="flex items-center gap-2 flex-wrap">
-        {pet.breed && <span className="text-gray-500 text-xs">{pet.breed}</span>}
-        {pet.gender && pet.gender !== "Unknown" && <Badge label={pet.gender} />}
-        {pet.weight_kg != null && (
-          <span className="text-gray-600 text-xs">{pet.weight_kg} kg</span>
-        )}
-      </div>
+      <div className="text-ink font-semibold">{pet.name}</div>
+      <div className="text-muted text-sm mt-0.5">{details}</div>
+      {pet.alert && (
+        <div className="mt-3 bg-red-50 border border-red-200 text-red-700 text-sm font-medium rounded-lg px-3 py-2">
+          ⚠ {pet.alert}
+        </div>
+      )}
     </div>
   );
 }

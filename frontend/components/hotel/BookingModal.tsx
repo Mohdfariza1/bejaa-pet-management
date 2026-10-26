@@ -91,11 +91,11 @@ export default function BookingModal({ onClose, onCreated }: Props) {
         {/* Available Cages */}
         {checkIn && checkOut && checkOut > checkIn && (
           <div>
-            <p className="text-xs text-gray-500 mb-2">
+            <p className="text-xs text-muted mb-2">
               {cagesLoading ? "Checking availability..." : `${availableCages.length} cage(s) available`}
             </p>
             {!cagesLoading && availableCages.length === 0 && (
-              <p className="text-red-400 text-xs">No cages available for these dates.</p>
+              <p className="text-red-600 text-sm">No cages available for these dates.</p>
             )}
             {!cagesLoading && availableCages.length > 0 && (
               <div className="grid grid-cols-2 gap-2">
@@ -105,12 +105,12 @@ export default function BookingModal({ onClose, onCreated }: Props) {
                     onClick={() => setSelectedCageId(cage.id)}
                     className={`p-2 rounded border text-left transition-colors ${
                       selectedCageId === cage.id
-                        ? "border-[#FFCC00] bg-yellow-900/20"
-                        : "border-[#2a2a2a] bg-[#111] hover:border-[#3a3a3a]"
+                        ? "border-brand bg-brand-soft"
+                        : "border-line bg-page hover:border-muted"
                     }`}
                   >
-                    <p className="text-white text-xs font-medium">{cage.label}</p>
-                    <p className="text-gray-500 text-xs">{cage.type} · {cage.size}</p>
+                    <p className="text-ink text-xs font-medium">{cage.label}</p>
+                    <p className="text-muted text-xs">{cage.type} · {cage.size}</p>
                   </button>
                 ))}
               </div>
@@ -133,11 +133,11 @@ export default function BookingModal({ onClose, onCreated }: Props) {
             onBlur={() => setTimeout(() => setShowPetList(false), 150)}
           />
           {showPetList && filteredPets.length > 0 && (
-            <div className="absolute z-10 left-0 right-0 bg-[#1a1a1a] border border-[#2a2a2a] rounded mt-1 max-h-36 overflow-y-auto">
+            <div className="absolute z-10 left-0 right-0 bg-card border border-line rounded mt-1 max-h-36 overflow-y-auto">
               {filteredPets.slice(0, 10).map((pet) => (
                 <button
                   key={pet.id}
-                  className="w-full text-left px-3 py-2 text-sm hover:bg-[#2a2a2a] transition-colors"
+                  className="w-full text-left px-3 py-2 text-sm hover:bg-soft transition-colors"
                   onMouseDown={(e) => e.preventDefault()}
                   onClick={() => {
                     setSelectedPetId(pet.id);
@@ -145,14 +145,14 @@ export default function BookingModal({ onClose, onCreated }: Props) {
                     setShowPetList(false);
                   }}
                 >
-                  <span className="text-white">{pet.name}</span>
-                  <span className="text-gray-500 text-xs ml-2">{pet.species}</span>
+                  <span className="text-ink">{pet.name}</span>
+                  <span className="text-muted text-xs ml-2">{pet.species}</span>
                 </button>
               ))}
             </div>
           )}
           {selectedPetId && (
-            <p className="text-[#FFCC00] text-xs mt-1">Selected</p>
+            <p className="text-brand text-xs mt-1">Selected</p>
           )}
         </div>
 
@@ -164,7 +164,7 @@ export default function BookingModal({ onClose, onCreated }: Props) {
           onChange={(e) => setNotes(e.target.value)}
         />
 
-        {error && <p className="text-red-400 text-xs">{error}</p>}
+        {error && <p className="text-red-600 text-sm">{error}</p>}
 
         <div className="flex justify-end gap-2 pt-1">
           <Button variant="secondary" onClick={onClose} disabled={loading}>Cancel</Button>

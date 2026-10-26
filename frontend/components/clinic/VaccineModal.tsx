@@ -84,7 +84,7 @@ export default function VaccineModal({ petId, onClose, onCreated }: Props) {
           onChange={(e) => set("notes", e.target.value)}
         />
 
-        {error && <p className="text-red-400 text-xs">{error}</p>}
+        {error && <p className="text-red-600 text-sm">{error}</p>}
 
         <div className="flex justify-end gap-2 pt-1">
           <Button variant="secondary" onClick={onClose} disabled={loading}>Cancel</Button>

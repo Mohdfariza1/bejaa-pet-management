@@ -1,21 +1,22 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
+import { readSession } from '@/lib/session'
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
   const isApi = pathname.startsWith('/api/')
 
-  if (pathname.startsWith('/api/auth/')) return NextResponse.next()
+  // Public booking routes need no key on the backend, so none is added here
+  if (pathname.startsWith('/api/auth/') || pathname.startsWith('/api/public/')) return NextResponse.next()
 
-  if (!pathname.startsWith('/api/public/')) {
-    const session = request.cookies.get('session')?.value
-    const secret = process.env.AUTH_SECRET ?? ''
-    const expected = Buffer.from(secret).toString('base64')
+  const session = await readSession(request.cookies.get('session')?.value)
+  if (!session) {
+    if (isApi) return NextResponse.json({ detail: 'Please log in again' }, { status: 401 })
+    return NextResponse.redirect(new URL('/login', request.url))
+  }
 
-    if (!secret || !session || session !== expected) {
-      if (isApi) return NextResponse.json({ detail: 'Please log in again' }, { status: 401 })
-      return NextResponse.redirect(new URL('/login', request.url))
-    }
+  if (pathname.startsWith('/staff') && session.role !== 'Boss') {
+    return NextResponse.redirect(new URL('/dashboard', request.url))
   }
 
   if (!isApi) return NextResponse.next()
@@ -23,9 +24,10 @@ export function middleware(request: NextRequest) {
   // The backend only answers requests carrying this key, so it never reaches the browser
   const headers = new Headers(request.headers)
   headers.set('x-api-key', process.env.API_KEY ?? '')
+  headers.set('x-staff-id', String(session.id))
   return NextResponse.next({ request: { headers } })
 }
 
 export const config = {
-  matcher: ['/dashboard/:path*', '/crm/:path*', '/hotel/:path*', '/clinic/:path*', '/api/:path*']
+  matcher: ['/dashboard/:path*', '/crm/:path*', '/hotel/:path*', '/clinic/:path*', '/staff/:path*', '/api/:path*']
 }

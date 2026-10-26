@@ -14,6 +14,7 @@ class PetCreate(BaseModel):
     date_of_birth: Optional[date] = None
     weight_kg: Optional[float] = None
     notes: Optional[str] = None
+    alert: Optional[str] = None
 
     @field_validator("name")
     @classmethod
@@ -51,6 +52,7 @@ class PetUpdate(BaseModel):
     date_of_birth: Optional[date] = None
     weight_kg: Optional[float] = None
     notes: Optional[str] = None
+    alert: Optional[str] = None
 
 class PetOut(BaseModel):
     id: int
@@ -62,6 +64,7 @@ class PetOut(BaseModel):
     date_of_birth: Optional[date]
     weight_kg: Optional[float]
     notes: Optional[str]
+    alert: Optional[str]
     created_at: datetime
 
     model_config = {"from_attributes": True}

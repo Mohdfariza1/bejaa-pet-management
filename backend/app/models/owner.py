@@ -12,5 +12,6 @@ class Owner(Base):
     email = Column(String(100), nullable=True)
     address = Column(String(255), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
+    archived_at = Column(DateTime, nullable=True)
 
     pets = relationship("Pet", back_populates="owner", cascade="all, delete-orphan")

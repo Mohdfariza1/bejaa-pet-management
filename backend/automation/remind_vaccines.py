@@ -39,7 +39,7 @@ def run():
             if not pet:
                 continue
             owner = db.query(Owner).filter(Owner.id == pet.owner_id).first()
-            if not owner:
+            if not owner or owner.archived_at:
                 continue
             msg = (
                 f"Hi {owner.name}! Health reminder: *{pet.name}*'s *{v.name}* vaccine "
@@ -54,7 +54,7 @@ def run():
             if not pet:
                 continue
             owner = db.query(Owner).filter(Owner.id == pet.owner_id).first()
-            if not owner:
+            if not owner or owner.archived_at:
                 continue
             msg = (
                 f"Hi {owner.name}! Today is the due date for *{pet.name}*'s *{v.name}* vaccine "

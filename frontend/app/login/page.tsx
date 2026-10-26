@@ -23,50 +23,51 @@ export default function LoginPage() {
     if (res.ok) {
       router.push("/dashboard");
     } else {
-      setError("Invalid username or password.");
+      const body = await res.json().catch(() => ({}));
+      setError(body.error ?? "Wrong username or password.");
       setLoading(false);
     }
   }
 
   return (
-    <div className="min-h-screen bg-[#111111] flex items-center justify-center px-4">
+    <div className="min-h-screen bg-page flex items-center justify-center px-4">
       <div className="w-full max-w-sm">
         <div className="mb-8 text-center">
-          <div className="text-[#FFCC00] font-bold text-lg tracking-widest uppercase">Bejaa Pet</div>
-          <div className="text-gray-500 text-sm mt-1">Management System</div>
+          <div className="text-brand font-bold text-2xl">🐾 Bejaa Pet</div>
+          <div className="text-muted text-sm mt-1">Hotel &amp; Clinic · Staff login</div>
         </div>
 
-        <form onSubmit={handleSubmit} className="bg-[#0d0d0d] border border-[#1e1e1e] rounded-lg p-6 flex flex-col gap-4">
+        <form onSubmit={handleSubmit} className="bg-card border border-line rounded-xl shadow-sm p-6 flex flex-col gap-4">
           <div>
-            <label className="block text-xs text-gray-400 mb-1.5 uppercase tracking-wider">Username</label>
+            <label className="block text-sm font-medium text-ink mb-1.5">Username</label>
             <input
               type="text"
               value={username}
               onChange={e => setUsername(e.target.value)}
               required
-              className="w-full bg-[#1a1a1a] border border-[#2a2a2a] text-white text-sm rounded px-3 py-2.5 focus:outline-none focus:border-[#FFCC00]/50"
+              className="w-full bg-card border border-line text-ink text-[15px] rounded-lg px-3 py-2.5 focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20"
             />
           </div>
 
           <div>
-            <label className="block text-xs text-gray-400 mb-1.5 uppercase tracking-wider">Password</label>
+            <label className="block text-sm font-medium text-ink mb-1.5">Password</label>
             <input
               type="password"
               value={password}
               onChange={e => setPassword(e.target.value)}
               required
-              className="w-full bg-[#1a1a1a] border border-[#2a2a2a] text-white text-sm rounded px-3 py-2.5 focus:outline-none focus:border-[#FFCC00]/50"
+              className="w-full bg-card border border-line text-ink text-[15px] rounded-lg px-3 py-2.5 focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20"
             />
           </div>
 
-          {error && <p className="text-red-400 text-xs">{error}</p>}
+          {error && <p className="text-red-600 text-sm">{error}</p>}
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-[#FFCC00] text-black font-semibold text-sm py-2.5 rounded hover:bg-[#e6b800] transition-colors disabled:opacity-50"
+            className="w-full bg-brand text-white font-semibold text-[15px] py-3 rounded-lg hover:bg-brand-dark transition-colors disabled:opacity-50"
           >
-            {loading ? "Signing in..." : "Sign In"}
+            {loading ? "Logging in..." : "Log in"}
           </button>
         </form>
       </div>

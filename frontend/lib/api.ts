@@ -7,7 +7,9 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({ detail: "Unknown error" }));
-    throw new Error(err.detail ?? "Request failed");
+    // Form checks come back as a list; show the first reason in plain words
+    const detail = Array.isArray(err.detail) ? String(err.detail[0]?.msg ?? "").replace(/^Value error, /, "") : err.detail;
+    throw new Error(detail || "Request failed");
   }
   return res.json();
 }

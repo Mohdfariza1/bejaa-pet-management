@@ -9,6 +9,8 @@ import { useToast } from "@/lib/toast";
 
 const TABS = ["All", "Active", "Checked In", "Checked Out", "Cancelled"] as const;
 type Tab = typeof TABS[number];
+const TAB_WORDS: Record<Tab, string> = { All: "All", Active: "Coming", "Checked In": "Staying now", "Checked Out": "Gone home", Cancelled: "Cancelled" };
+const DONE_WORDS: Record<string, string> = { "Checked In": "checked in", "Checked Out": "sent home", Cancelled: "booking cancelled" };
 
 function tabCount(bookings: Booking[], tab: Tab) {
   if (tab === "All") return bookings.length;
@@ -53,7 +55,7 @@ export default function HotelPage() {
     try {
       await api.put(`/bookings/${id}`, { status });
       setBookings((prev) => prev.map((b) => (b.id === id ? { ...b, status } : b)));
-      showToast(`Status updated to ${status}`);
+      showToast(`${petMap[bookings.find((b) => b.id === id)?.pet_id ?? 0]?.name ?? "Booking"} ${DONE_WORDS[status] ?? status} ✓`);
     } catch (e: unknown) {
       showToast(e instanceof Error ? e.message : "Failed to update booking", "error");
     }
@@ -66,47 +68,47 @@ export default function HotelPage() {
   });
 
   return (
-    <div className="p-6 max-w-5xl">
+    <div className="p-4 md:p-8 max-w-5xl">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-white text-xl font-semibold">Hotel</h1>
-        <Button onClick={() => setShowModal(true)}>+ New Booking</Button>
+        <h1 className="text-ink text-2xl font-bold">Boarding</h1>
+        <Button onClick={() => setShowModal(true)}>+ New booking</Button>
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-0 mb-6 border-b border-[#2a2a2a]">
+      <div className="flex gap-2 mb-5 overflow-x-auto pb-1">
         {TABS.map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
-            className={`px-4 py-2 text-sm font-medium transition-colors border-b-2 -mb-px ${
+            className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
               tab === t
-                ? "border-[#FFCC00] text-[#FFCC00]"
-                : "border-transparent text-gray-500 hover:text-gray-300"
+                ? "bg-ink text-white"
+                : "bg-card text-muted hover:text-ink"
             }`}
           >
-            {t}
-            <span className="ml-1.5 text-xs text-gray-600">({tabCount(bookings, t)})</span>
+            {TAB_WORDS[t]}
+            <span className={`ml-1.5 ${tab === t ? "text-white/70" : "text-muted"}`}>{tabCount(bookings, t)}</span>
           </button>
         ))}
       </div>
 
       {/* List */}
-      {loading && <p className="text-gray-600 text-sm">Loading...</p>}
+      {loading && <p className="text-muted text-sm">Loading...</p>}
       {!loading && filtered.length === 0 && (
         <div className="text-center py-16">
-          <p className="text-gray-600 text-sm">No bookings here.</p>
+          <p className="text-muted text-sm">No bookings here.</p>
           {tab === "All" && (
             <button
               onClick={() => setShowModal(true)}
-              className="text-[#FFCC00] text-sm mt-2 hover:underline"
+              className="text-brand text-sm mt-2 hover:underline"
             >
-              Create first booking →
+              Make a booking →
             </button>
           )}
         </div>
       )}
       {!loading && filtered.length > 0 && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        <ul className="bg-card rounded-2xl border border-line divide-y divide-line overflow-hidden">
           {filtered.map((b) => (
             <BookingCard
               key={b.id}
@@ -116,7 +118,7 @@ export default function HotelPage() {
               onAction={handleAction}
             />
           ))}
-        </div>
+        </ul>
       )}
 
       {showModal && (

@@ -30,7 +30,7 @@ def run():
             if not pet:
                 continue
             owner = db.query(Owner).filter(Owner.id == pet.owner_id).first()
-            if not owner:
+            if not owner or owner.archived_at:
                 continue
             msg = (
                 f"Hi {owner.name}! Reminder: *{pet.name}*'s stay at Bejaa Pet Hotel ends "

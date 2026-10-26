@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
+from datetime import datetime
 from typing import Optional
 from app.database import get_db
 from app.models.pet import Pet
@@ -14,7 +15,7 @@ def list_pets(
     species: Optional[str] = Query(None),
     db: Session = Depends(get_db)
 ):
-    query = db.query(Pet)
+    query = db.query(Pet).filter(Pet.archived_at.is_(None))
     if owner_id:
         query = query.filter(Pet.owner_id == owner_id)
     if species:
@@ -23,7 +24,7 @@ def list_pets(
 
 @router.post("", response_model=PetOut, status_code=201)
 def create_pet(data: PetCreate, db: Session = Depends(get_db)):
-    if not db.query(Owner).filter(Owner.id == data.owner_id).first():
+    if not db.query(Owner).filter(Owner.id == data.owner_id, Owner.archived_at.is_(None)).first():
         raise HTTPException(status_code=404, detail="Owner not found")
     pet = Pet(**data.model_dump())
     db.add(pet)
@@ -49,10 +50,11 @@ def update_pet(pet_id: int, data: PetUpdate, db: Session = Depends(get_db)):
     db.refresh(pet)
     return pet
 
+# Delete only archives, so bookings and clinic history are kept
 @router.delete("/{pet_id}", status_code=204)
 def delete_pet(pet_id: int, db: Session = Depends(get_db)):
     pet = db.query(Pet).filter(Pet.id == pet_id).first()
     if not pet:
         raise HTTPException(status_code=404, detail="Pet not found")
-    db.delete(pet)
+    pet.archived_at = datetime.utcnow()
     db.commit()

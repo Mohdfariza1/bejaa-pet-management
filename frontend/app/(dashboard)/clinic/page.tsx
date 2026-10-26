@@ -78,20 +78,20 @@ export default function ClinicPage() {
   };
 
   return (
-    <div className="p-6 max-w-4xl">
+    <div className="p-4 md:p-8 max-w-4xl">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-white text-xl font-semibold">
+        <h1 className="text-ink text-2xl font-bold">
           {selectedPet ? (
             <span className="flex items-center gap-3">
               <button
                 onClick={handleBack}
-                className="text-gray-500 hover:text-[#FFCC00] text-sm font-normal transition-colors"
+                className="text-muted hover:text-brand text-sm font-normal transition-colors"
               >
                 ← Clinic
               </button>
-              <span className="text-[#FFCC00]">{selectedPet.name}</span>
-              <span className="text-gray-600 text-sm font-normal">
+              <span>{selectedPet.name}</span>
+              <span className="text-muted text-sm font-normal">
                 {selectedPet.species}{selectedPet.breed ? ` · ${selectedPet.breed}` : ""}
               </span>
             </span>
@@ -118,16 +118,16 @@ export default function ClinicPage() {
             onBlur={() => setTimeout(() => setShowPetList(false), 150)}
           />
           {showPetList && filteredPets.length > 0 && (
-            <div className="absolute z-10 left-0 right-0 bg-[#1a1a1a] border border-[#2a2a2a] rounded mt-1 max-h-52 overflow-y-auto">
+            <div className="absolute z-10 left-0 right-0 bg-card border border-line rounded mt-1 max-h-52 overflow-y-auto">
               {filteredPets.map((pet) => (
                 <button
                   key={pet.id}
-                  className="w-full text-left px-4 py-3 hover:bg-[#2a2a2a] transition-colors"
+                  className="w-full text-left px-4 py-3 hover:bg-soft transition-colors"
                   onMouseDown={(e) => e.preventDefault()}
                   onClick={() => selectPet(pet)}
                 >
-                  <p className="text-white text-sm">{pet.name}</p>
-                  <p className="text-gray-500 text-xs">
+                  <p className="text-ink text-sm">{pet.name}</p>
+                  <p className="text-muted text-xs">
                     {pet.species}{pet.breed ? ` · ${pet.breed}` : ""}
                   </p>
                 </button>
@@ -136,11 +136,11 @@ export default function ClinicPage() {
           )}
           {!petQuery && (
             <div className="text-center py-16">
-              <p className="text-gray-600 text-sm">Search a pet to view clinic records.</p>
+              <p className="text-muted text-sm">Search a pet to view clinic records.</p>
             </div>
           )}
           {petQuery && filteredPets.length === 0 && (
-            <p className="text-gray-600 text-xs mt-2">No pets found.</p>
+            <p className="text-muted text-xs mt-2">No pets found.</p>
           )}
         </div>
       )}
@@ -148,34 +148,37 @@ export default function ClinicPage() {
       {/* Tabs + content */}
       {selectedPet && (
         <>
-          <div className="flex border-b border-[#2a2a2a] mb-6">
+          {selectedPet.alert && (
+            <div className="mb-4 bg-red-50 border border-red-200 text-red-700 font-medium rounded-lg px-4 py-3">⚠ {selectedPet.alert}</div>
+          )}
+          <div className="flex border-b border-line mb-6">
             {(["medical", "vaccines"] as ClinicTab[]).map((t) => (
               <button
                 key={t}
                 onClick={() => setTab(t)}
                 className={`px-4 py-2 text-sm font-medium transition-colors border-b-2 -mb-px ${
                   tab === t
-                    ? "border-[#FFCC00] text-[#FFCC00]"
-                    : "border-transparent text-gray-500 hover:text-gray-300"
+                    ? "border-brand text-brand"
+                    : "border-transparent text-muted hover:text-ink"
                 }`}
               >
                 {t === "medical" ? "Medical Records" : "Vaccines"}
-                <span className="ml-1.5 text-xs text-gray-600">
+                <span className="ml-1.5 text-xs text-muted">
                   ({t === "medical" ? records.length : vaccines.length})
                 </span>
               </button>
             ))}
           </div>
 
-          {loading && <p className="text-gray-600 text-sm">Loading...</p>}
+          {loading && <p className="text-muted text-sm">Loading...</p>}
 
           {!loading && tab === "medical" && (
             records.length === 0 ? (
               <div className="text-center py-16">
-                <p className="text-gray-600 text-sm">No medical records yet.</p>
+                <p className="text-muted text-sm">No medical records yet.</p>
                 <button
                   onClick={() => setShowMedModal(true)}
-                  className="text-[#FFCC00] text-sm mt-2 hover:underline"
+                  className="text-brand text-sm mt-2 hover:underline"
                 >
                   Add first record →
                 </button>
@@ -192,10 +195,10 @@ export default function ClinicPage() {
           {!loading && tab === "vaccines" && (
             vaccines.length === 0 ? (
               <div className="text-center py-16">
-                <p className="text-gray-600 text-sm">No vaccines recorded yet.</p>
+                <p className="text-muted text-sm">No vaccines recorded yet.</p>
                 <button
                   onClick={() => setShowVaxModal(true)}
-                  className="text-[#FFCC00] text-sm mt-2 hover:underline"
+                  className="text-brand text-sm mt-2 hover:underline"
                 >
                   Add first vaccine →
                 </button>
